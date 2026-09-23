@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey="pk_test_aW5ub2NlbnQtYnJlYW0tNDIzMC5jbGVyay5hY2NvdW50cy5kZXYk">
       <html lang="en">
       <body className="antialiased">
         {children}
