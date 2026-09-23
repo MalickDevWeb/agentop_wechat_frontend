@@ -1,6 +1,5 @@
+'use client';
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/nextjs';
-'use client'
-
 import { useState, useEffect } from 'react'
 import { Activity, ArrowRight, Bot, Check, ChevronDown, Code2, Copy, Download, GitBranch, LayoutDashboard, Link2, Lock, Menu, MessageSquare, MoreHorizontal, Play, Search, Settings2, ShieldCheck, Sparkles, Terminal, ToggleLeft, Upload, Users, X } from 'lucide-react'
 
