@@ -1,6 +1,5 @@
 'use client';
 import { useUser, useClerk } from '@clerk/nextjs';
-import { signIn, signOut, useSession } from 'next-auth/react';
 
 import { useState, useEffect } from 'react'
 import { Activity, ArrowRight, Bot, Check, ChevronDown, Code2, Copy, Download, GitBranch, LayoutDashboard, Link2, Lock, Menu, MessageSquare, MoreHorizontal, Play, Search, Settings2, ShieldCheck, Sparkles, Terminal, ToggleLeft, Upload, Users, X } from 'lucide-react'
