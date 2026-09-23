@@ -1,5 +1,4 @@
-'use client';
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/nextjs';
+'use client'
 
 import { useState, useEffect } from 'react'
 import { Activity, ArrowRight, Bot, Check, ChevronDown, Code2, Copy, Download, GitBranch, LayoutDashboard, Link2, Lock, Menu, MessageSquare, MoreHorizontal, Play, Search, Settings2, ShieldCheck, Sparkles, Terminal, ToggleLeft, Upload, Users, X } from 'lucide-react'
@@ -116,20 +115,8 @@ function Login({ onLogin }: { onLogin: (profileId: string) => void }) {
   return <main className="login-shell"><div className="login-brand"><span className="brand-mark"><Sparkles size={14}/></span><b>agent<span>ops</span></b><small>Enterprise</small></div><div className="login-layout"><section className="login-story"><div className="eyebrow">ORANGE SENEGAL / AI GOVERNANCE</div><h1>Centralisez l&apos;intelligence de votre équipe technique.</h1><p>La plateforme qui transforme les bonnes pratiques de vos Lead Devs en une IA autonome, contrôlée et prête pour la production.</p><div className="terminal-card"><div className="terminal-top"><span><i/><i/><i/></span><small>agentops / digital-twin</small><span>•••</span></div><div className="terminal-line"><span className="terminal-prompt">$</span> agentops twin validate --workspace orange-sn</div><div className="terminal-success"><Check size={15}/><span><b>Jumeau Numérique activé</b><small>142 règles d&apos;architecture prêtes à l&apos;emploi.</small></span></div></div><div className="trust-list"><div><ShieldCheck size={17}/><span><b>Gouvernance sans friction</b><small>Chaque changement est vérifié avant production.</small></span></div><div><Lock size={17}/><span><b>Sécurité entreprise</b><small>Accès par rôle, audit et conformité centralisés.</small></span></div></div></section><section className="login-card"><div className="login-card-head"><span className="login-lock"><Sparkles size={17}/></span><div><h2>Bienvenue sur AgentOps</h2><p>Connectez-vous au Cerveau d&apos;Équipe Orange Senegal</p></div></div><button className="github-button" type="button" onClick={()=>onLogin(selectedProfile)}><GitBranch size={17}/> Continuer avec GitHub</button><div className="login-divider"><span>ou avec votre compte entreprise</span></div><form onSubmit={submit} className="login-form"><label>Email professionnel<input type="email" placeholder="prenom.nom@orange.sn" value={email} onChange={(e)=>setEmail(e.target.value)} required /></label><label>Mot de passe<input type="password" placeholder="••••••••" value={password} onChange={(e)=>setPassword(e.target.value)} required minLength={4} /></label><div className="login-helper"><span><input type="checkbox" /> Rester connecté</span><button type="button">Mot de passe oublié ?</button></div>{error && <div className="login-error" role="alert">{error}</div>}<button className="button primary login-submit" type="submit">Ouvrir AgentOps <ArrowRight size={14}/></button></form><div className="profile-preview"><span>PROFIL DE DÉMONSTRATION</span><div className="profile-choice-row">{profiles.map((item)=><button type="button" key={item.id} className={`profile-choice ${selectedProfile===item.id?'selected':''}`} onClick={()=>setSelectedProfile(item.id)}><span className={`profile-avatar ${item.tone}`}>{item.initials}</span><span><b>{item.name}</b><small>{item.role}</small></span></button>)}</div></div><div className="login-foot"><span><ShieldCheck size={13}/> Accès sécurisé · équipes autorisées</span><span>Dakar · v2.4.0</span></div></section></div></main>
   }
 
-function MainApp() {
-  const { isLoaded, isSignedIn, user } = useUser()
-  const [isAdmin, setIsAdmin] = useState(false)
-
-  useEffect(() => {
-    if (isSignedIn && user) {
-       // Synchronisation avec le backend pour initier l'admin
-       fetch(`${API_URL}/auth/sync`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ clerk_id: user.id, email: user.primaryEmailAddress?.emailAddress, name: user.fullName })
-       }).then(r=>r.json()).then(data => setIsAdmin(data.role === 'ADMIN')).catch(e=>console.log(e))
-    }
-  }, [isSignedIn, user])
+export default function Page() {
+  const [loggedIn, setLoggedIn] = useState(false)
   const [screen, setScreen] = useState('twin')
   const [profileId, setProfileId] = useState('ml')
   const [profileMenu, setProfileMenu] = useState(false)
@@ -153,56 +140,3 @@ void Copy
 void ArrowRight
 
 type ReactNode = React.ReactNode
-
-
-
-
-export default function Page() {
-  const { isLoaded, isSignedIn, user } = useUser()
-  const [isAdmin, setIsAdmin] = useState(false)
-
-  useEffect(() => {
-    if (isSignedIn && user) {
-       fetch(`${API_URL}/auth/sync`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ clerk_id: user.id, email: user.primaryEmailAddress?.emailAddress, name: user.fullName })
-       }).then(r=>r.json()).then(data => setIsAdmin(data.role === 'ADMIN')).catch(e=>console.log(e))
-    }
-  }, [isSignedIn, user])
-
-  if (!isLoaded) {
-    return <div className="min-h-screen bg-[#030712] flex flex-col items-center justify-center text-white"><Sparkles className="w-8 h-8 text-purple-500 animate-pulse mb-4"/><span>Chargement de la plateforme Sonatel...</span></div>
-  }
-
-  if (!isSignedIn) {
-    return (
-      <div className="relative">
-         <div className="pointer-events-none opacity-50 blur-sm">
-           <Login onLogin={() => {}} />
-         </div>
-         <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-[#030712]/90 border border-purple-500/30 p-8 rounded-2xl backdrop-blur-xl flex flex-col items-center">
-               <ShieldCheck className="w-12 h-12 text-purple-400 mb-4" />
-               <h2 className="text-2xl font-bold text-white mb-2">Accès Sécurisé</h2>
-               <p className="text-slate-400 mb-6 text-center max-w-xs">Vous devez être authentifié(e) pour accéder à l'AgentOps Sonatel.</p>
-               <SignInButton mode="modal">
-                 <button className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-slate-200 transition-colors">
-                    <GitBranch className="w-5 h-5" />
-                    Continuer avec GitHub
-                 </button>
-               </SignInButton>
-            </div>
-         </div>
-      </div>
-    )
-  }
-
-  return (
-    <>
-      <SignedIn>
-        <MainApp />
-      </SignedIn>
-    </>
-  )
-}
