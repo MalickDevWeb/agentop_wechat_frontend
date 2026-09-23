@@ -1,3 +1,4 @@
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -115,7 +116,7 @@ function Login({ onLogin }: { onLogin: (profileId: string) => void }) {
   return <main className="login-shell"><div className="login-brand"><span className="brand-mark"><Sparkles size={14}/></span><b>agent<span>ops</span></b><small>Enterprise</small></div><div className="login-layout"><section className="login-story"><div className="eyebrow">ORANGE SENEGAL / AI GOVERNANCE</div><h1>Centralisez l&apos;intelligence de votre équipe technique.</h1><p>La plateforme qui transforme les bonnes pratiques de vos Lead Devs en une IA autonome, contrôlée et prête pour la production.</p><div className="terminal-card"><div className="terminal-top"><span><i/><i/><i/></span><small>agentops / digital-twin</small><span>•••</span></div><div className="terminal-line"><span className="terminal-prompt">$</span> agentops twin validate --workspace orange-sn</div><div className="terminal-success"><Check size={15}/><span><b>Jumeau Numérique activé</b><small>142 règles d&apos;architecture prêtes à l&apos;emploi.</small></span></div></div><div className="trust-list"><div><ShieldCheck size={17}/><span><b>Gouvernance sans friction</b><small>Chaque changement est vérifié avant production.</small></span></div><div><Lock size={17}/><span><b>Sécurité entreprise</b><small>Accès par rôle, audit et conformité centralisés.</small></span></div></div></section><section className="login-card"><div className="login-card-head"><span className="login-lock"><Sparkles size={17}/></span><div><h2>Bienvenue sur AgentOps</h2><p>Connectez-vous au Cerveau d&apos;Équipe Orange Senegal</p></div></div><button className="github-button" type="button" onClick={()=>onLogin(selectedProfile)}><GitBranch size={17}/> Continuer avec GitHub</button><div className="login-divider"><span>ou avec votre compte entreprise</span></div><form onSubmit={submit} className="login-form"><label>Email professionnel<input type="email" placeholder="prenom.nom@orange.sn" value={email} onChange={(e)=>setEmail(e.target.value)} required /></label><label>Mot de passe<input type="password" placeholder="••••••••" value={password} onChange={(e)=>setPassword(e.target.value)} required minLength={4} /></label><div className="login-helper"><span><input type="checkbox" /> Rester connecté</span><button type="button">Mot de passe oublié ?</button></div>{error && <div className="login-error" role="alert">{error}</div>}<button className="button primary login-submit" type="submit">Ouvrir AgentOps <ArrowRight size={14}/></button></form><div className="profile-preview"><span>PROFIL DE DÉMONSTRATION</span><div className="profile-choice-row">{profiles.map((item)=><button type="button" key={item.id} className={`profile-choice ${selectedProfile===item.id?'selected':''}`} onClick={()=>setSelectedProfile(item.id)}><span className={`profile-avatar ${item.tone}`}>{item.initials}</span><span><b>{item.name}</b><small>{item.role}</small></span></button>)}</div></div><div className="login-foot"><span><ShieldCheck size={13}/> Accès sécurisé · équipes autorisées</span><span>Dakar · v2.4.0</span></div></section></div></main>
   }
 
-export default function Page() {
+function MainApp() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [screen, setScreen] = useState('twin')
   const [profileId, setProfileId] = useState('ml')
@@ -140,3 +141,26 @@ void Copy
 void ArrowRight
 
 type ReactNode = React.ReactNode
+
+export default function Page() {
+  return (
+    <>
+      <SignedOut>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#030712] text-white">
+            <div className="p-8 border border-white/10 bg-white/5 rounded-2xl backdrop-blur-md text-center">
+                <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">AgentOps Enterprise</h1>
+                <p className="text-slate-400 mb-8">Authentification requise pour Sonatel</p>
+                <SignInButton mode="modal">
+                    <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all">
+                        Se connecter (GitHub)
+                    </button>
+                </SignInButton>
+            </div>
+        </div>
+      </SignedOut>
+      <SignedIn>
+        <MainApp />
+      </SignedIn>
+    </>
+  )
+}
