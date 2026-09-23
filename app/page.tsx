@@ -1,5 +1,6 @@
 'use client'
 
+import { useUser, useClerk } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { Activity, ArrowRight, Bot, Check, ChevronDown, Code2, Copy, Download, GitBranch, LayoutDashboard, Link2, Lock, Menu, MessageSquare, MoreHorizontal, Play, Search, Settings2, ShieldCheck, Sparkles, Terminal, ToggleLeft, Upload, Users, X } from 'lucide-react'
 
@@ -116,14 +117,16 @@ function Login({ onLogin }: { onLogin: (profileId: string) => void }) {
   }
 
 export default function Page() {
-  const [loggedIn, setLoggedIn] = useState(false)
+  const { isLoaded, isSignedIn } = useUser()
+  const { openSignIn } = useClerk()
   const [screen, setScreen] = useState('twin')
   const [profileId, setProfileId] = useState('ml')
   const [profileMenu, setProfileMenu] = useState(false)
   const [developerTrusted, setDeveloperTrusted] = useState(false)
   const [workspaceMenu, setWorkspaceMenu] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  if (!loggedIn) return <Login onLogin={(id) => { setProfileId(id); setLoggedIn(true) }} />
+  if (!isLoaded) return null
+  if (!isSignedIn) return <Login onLogin={() => openSignIn()} />
   const current = screens.find((s) => s.id === screen)!
   const profile = profiles.find((item) => item.id === profileId) ?? profiles[0]
   const isDeveloper = profile.tone === 'dev'
