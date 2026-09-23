@@ -25,7 +25,7 @@ function CodeReview() { const [status, setStatus] = useState<'pending' | 'approv
 function Heal() {
   const [crashes, setCrashes] = useState([['TypeError: Cannot read properties of undefined','platform-api','Il y a 8 min','PR créée automatiquement','green'],['TimeoutError: Database connection','data-pipeline','Il y a 42 min','Analyse en cours','amber'],['BuildError: Module not found','agentops-web','Il y a 2 h','Fusionnée','blue']]);
   useEffect(() => {
-    fetch(`${API_URL}/devops/crashes`).then(r=>r.json()).then(data => {
+    fetch(`${API_URL}/devops/crashes/`).then(r=>r.json()).then(data => {
       if(data && data.length) setCrashes(data.map(d => [d.error, d.repo, d.time, d.status, d.tone]))
     }).catch(e => console.log("Backend offline, using mocks"));
   }, []);
@@ -37,7 +37,7 @@ function Brain() { return <div className="content brain"><Header eyebrow="DEVELO
 function Leaderboard() {
   const [leaders, setLeaders] = useState([['Marie Laurent','ML','248','+18%','Top contributor'],['Simon Bernard','SB','184','+12%','Régulier'],['Clara Dubois','CD','156','+24%','En progression'],['Alex Martin','AM','121','+8%','Contributeur']]);
   useEffect(() => {
-    fetch(`${API_URL}/team/leaderboard`).then(r=>r.json()).then(data => {
+    fetch(`${API_URL}/team/leaderboard/`).then(r=>r.json()).then(data => {
       if(data && data.length) setLeaders(data.map(d => [d.name, d.initials, d.score.toString(), d.growth, d.badge]))
     }).catch(e => console.log("Backend offline, using mocks"));
   }, []);
@@ -64,7 +64,7 @@ function ComponentHub({ isDeveloper, developerTrusted, onGrantDeveloperTrust }: 
   ])
   
   useEffect(() => {
-    fetch(`${API_URL}/components`).then(r=>r.json()).then(data => {
+    fetch(`${API_URL}/components/`).then(r=>r.json()).then(data => {
       if(data && data.length) setComponents(data)
     }).catch(e => console.log("Backend offline, using mocks"));
   }, []);
