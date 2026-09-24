@@ -518,7 +518,7 @@ function Gouvernance() {
                         style={{padding:'6px 12px', fontSize:11, borderRadius: 6, transition: 'all 0.2s', background: u.perms.submit ? 'rgba(35, 134, 54, 0.2)' : 'transparent', border: u.perms.submit ? '1px solid #238636' : '1px solid rgba(255,255,255,0.1)', color: u.perms.submit ? '#3fb950' : '#8b949e', cursor: 'pointer'}}
                         title="Autoriser à proposer du code à l'IA"
                       >
-                        {u.perms.submit ? '✓ Proposer à l'IA' : '✕ Proposer à l'IA'}
+                        {u.perms.submit ? "✓ Proposer à l'IA" : "✕ Proposer à l'IA"}
                       </button>
                       
                       <button 
