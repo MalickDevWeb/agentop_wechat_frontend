@@ -299,6 +299,55 @@ function Login({ onLogin }: { onLogin: () => void }) {
   return <main className="login-shell"><div className="login-brand"><span className="brand-mark"><Sparkles size={14}/></span><b>agent<span>ops</span></b><small>Enterprise</small></div><div className="login-layout"><section className="login-story"><div className="eyebrow">ORANGE SENEGAL / AI GOVERNANCE</div><h1>Centralisez l&apos;intelligence de votre équipe technique.</h1><p>La plateforme qui transforme les bonnes pratiques de vos Lead Devs en une IA autonome, contrôlée et prête pour la production.</p><div className="terminal-card"><div className="terminal-top"><span><i/><i/><i/></span><small>agentops / digital-twin</small><span>•••</span></div><div className="terminal-line"><span className="terminal-prompt">$</span> agentops twin validate --workspace orange-sn</div><div className="terminal-success"><Check size={15}/><span><b>Jumeau Numérique activé</b><small>142 règles d&apos;architecture prêtes à l&apos;emploi.</small></span></div></div><div className="trust-list"><div><ShieldCheck size={17}/><span><b>Gouvernance sans friction</b><small>Chaque changement est vérifié avant production.</small></span></div><div><Lock size={17}/><span><b>Sécurité entreprise</b><small>Accès par rôle, audit et conformité centralisés.</small></span></div></div></section><section className="login-card"><div className="login-card-head"><span className="login-lock"><Sparkles size={17}/></span><div><h2>Bienvenue sur AgentOps</h2><p>Connectez-vous à l'espace de travail Orange Senegal</p></div></div><button className="button primary full" style={{padding:'14px', fontSize:'15px', marginTop:'24px'}} type="button" onClick={onLogin}><GitBranch size={17}/> Continuer avec GitHub</button><div className="login-foot" style={{marginTop:'40px'}}><span><ShieldCheck size={13}/> Accès sécurisé · authentifié par Clerk</span><span>Dakar · Production</span></div></section></div></main>
 }
 
+
+function Gouvernance() {
+  const [allUsers, setAllUsers] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch(`${API_URL}/auth/users`).then(r=>r.json()).then(data => { if(data && data.length) setAllUsers(data); }).catch(()=>{});
+  }, []);
+  
+  const toggleIngest = async (clerkId: string) => {
+    const res = await fetch(`${API_URL}/auth/users/${clerkId}/toggle-ingest`, {method: 'POST'});
+    if(res.ok) {
+      const updated = await res.json();
+      setAllUsers(allUsers.map(u => u.id === clerkId ? {...u, can_ingest: updated.can_ingest} : u));
+    }
+  };
+
+  return (
+    <div className="content">
+      <Header eyebrow="SÉCURITÉ & ACCÈS" title="Gouvernance Complète" desc="Gérez les développeurs, leurs droits d'ingestion et de publication." />
+      <div style={{marginTop: 40}}>
+        <div className="card" style={{padding:20}}>
+          <table style={{width:'100%', textAlign:'left', borderCollapse:'collapse'}}>
+            <thead>
+              <tr style={{borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+                <th style={{paddingBottom:10}}>Développeur</th>
+                <th style={{paddingBottom:10}}>Rôle</th>
+                <th style={{paddingBottom:10, textAlign:'right'}}>Droit d'ingestion Git</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allUsers.map(u => (
+                <tr key={u.id} style={{borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
+                  <td style={{padding:'12px 0'}}>{u.name} <span style={{color:'#888', fontSize:12, marginLeft:8}}>{u.email}</span></td>
+                  <td style={{padding:'12px 0'}}><Badge tone={u.role==='ADMIN'?'purple':'blue'}>{u.role}</Badge></td>
+                  <td style={{padding:'12px 0', textAlign:'right'}}>
+                    <button className={`button ${u.can_ingest ? 'primary' : 'ghost'}`} onClick={() => toggleIngest(u.id)} style={{padding:'4px 10px', fontSize:12}}>
+                      {u.can_ingest ? '✓ Autorisé' : '✕ Interdit'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Page() {
   const { isLoaded, isSignedIn, user } = useUser()
   const { openSignIn } = useClerk()
