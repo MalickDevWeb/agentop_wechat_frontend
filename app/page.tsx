@@ -253,6 +253,7 @@ function Login({ onLogin }: { onLogin: () => void }) {
 export default function Page() {
   const { isLoaded, isSignedIn, user } = useUser()
   const { openSignIn } = useClerk()
+  const [isAdmin, setIsAdmin] = useState(false);
   const [screen, setScreen] = useState('twin')
   const [dbUser, setDbUser] = useState({ role: 'ADMIN', tone: 'admin' })
   const [developerTrusted, setDeveloperTrusted] = useState(false)
