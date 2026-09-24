@@ -301,9 +301,9 @@ function Login({ onLogin }: { onLogin: () => void }) {
 
 
 function Gouvernance() {
-  const [allUsers, setAllUsers] = React.useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch(`${API_URL}/auth/users`).then(r=>r.json()).then(data => { if(data && data.length) setAllUsers(data); }).catch(()=>{});
   }, []);
   
@@ -317,7 +317,7 @@ function Gouvernance() {
 
   return (
     <div className="content">
-      <Header eyebrow="SÉCURITÉ & ACCÈS" title="Gouvernance Complète" desc="Gérez les développeurs, leurs droits d'ingestion et de publication." />
+      <Header eyebrow="SÉCURITÉ & ACCÈS" title="Gouvernance Complète" desc="Gérez les développeurs, leurs droits d'ingestion et de publication." action="Exporter CSV" />
       <div style={{marginTop: 40}}>
         <div className="card" style={{padding:20}}>
           <table style={{width:'100%', textAlign:'left', borderCollapse:'collapse'}}>
