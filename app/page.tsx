@@ -63,19 +63,93 @@ function Twin() {
         {prStatus !== 'pending' && <div className="publish-confirm" style={{color: prStatus === 'approved' ? '#4ade80' : '#f87171',display:'flex',alignItems:'center',gap:6,padding:'8px 0'}}>{prStatus === 'approved' ? <><Check size={15}/> PR Approuvée !</> : <><X size={15}/> PR Rejetée.</>}</div>}
         <div style={{display:'none'}}></div></>}</Panel><Panel className="twin-settings"><div className="panel-head"><div><h2><Bot size={17} /> Jumeau Numérique</h2><p>Profil de Marie Laurent</p></div><Badge tone="purple">Actif</Badge></div><div className="twin-avatar"><span>ML</span><div><b>Marie Laurent</b><small>Lead Developer · Platform</small></div></div><div className="setting-toggle"><div><b>Auto-Approve</b><p>Laisser mon Jumeau Numérique valider automatiquement les codes avec un score &gt; 95%.</p></div><button className={`toggle ${auto ? 'on' : ''}`} onClick={() => setAuto(!auto)} aria-pressed={auto}><span /></button></div><div className="mini-stats"><div><span>PRs analysées</span><b>184</b></div><div><span>Précision</span><b>98.6%</b></div></div><div className="trust-list"><div><Check size={14} /> Style de code respecté</div><div><Check size={14} /> Secrets détectés</div><div><Check size={14} /> Tests de sécurité passés</div></div></Panel></div></div> }
 
-function CodeReview() { const [status, setStatus] = useState<'pending' | 'approved' | 'rejected'>('pending'); const [commentOpen, setCommentOpen] = useState(false); const [comment, setComment] = useState(''); const [commentSent, setCommentSent] = useState(false);
-  const [analysing, setAnalysing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState('');
-  const runAnalysis = async () => {
-    setAnalysing(true); setAnalysisResult('');
-    try {
-      const data = await fetch(`${API_URL}/twin/`).then(r=>r.json());
-      if(data && data.length) setAnalysisResult(`Analyse terminée : ${data.length} PR(s) analysée(s). Dernière : ${data[0].title}`);
-      else setAnalysisResult('Analyse terminée. Aucune PR en attente de validation.');
-    } catch(e) { setAnalysisResult('Analyse terminée. Backend en veille, relancez dans 30s.'); }
-    setAnalysing(false);
+function CodeReview() {
+  const [status, setStatus] = useState('pending');
+  const [commenting, setCommenting] = useState(false);
+
+  const handleApprove = () => setStatus('approved');
+  const handleReject = () => setStatus('rejected');
+  const handleComment = () => {
+    setCommenting(true);
+    setTimeout(() => {
+      setCommenting(false);
+      alert("AgentOps a analysé le code et généré le commentaire GitHub suivant :
+
+'Excellente initiative de passer au JWT ! Cela sécurise l'API et évite l'accès direct en base. Le code respecte nos standards. PR prête à être mergée.'");
+    }, 1500);
   };
-  return <div className="content"><div className="hero-row"><div><div className="eyebrow">GITHUB / CODE REVIEW</div><h1>Code Review</h1><p>Analysez les changements critiques avant de les intégrer à votre production.</p></div><Badge tone={status === 'approved' ? 'green' : status === 'rejected' ? 'amber' : 'blue'}>{status === 'approved' ? 'Approuvé' : status === 'rejected' ? 'Rejeté' : 'En attente'}</Badge></div><Panel className="review-panel"><div className="panel-head"><div><h2>PR #482</h2><p>feat: rotate authentication middleware · Analyse terminée</p></div><Badge tone="green">99% confiance</Badge></div><div className="review-summary"><Sparkles size={18}/><div><b>Analyse AgentOps Copilot</b><p>Le changement renforce la vérification JWT et supprime un accès direct à la base de données.</p></div></div><CodeBlock/><div className="review-actions"><button className="button ghost" type="button" onClick={() => setStatus('rejected')} disabled={status !== 'pending'}>Rejeter</button><button className="button ghost" type="button" onClick={() => setCommentOpen(!commentOpen)} disabled={status !== 'pending'}><MessageSquare size={14}/> Générer un commentaire GitHub</button><button className="button primary" type="button" onClick={() => setStatus('approved')} disabled={status !== 'pending'}><Check size={14}/> Approuver</button></div>{commentOpen && status === 'pending' && <div className="review-comment"><textarea aria-label="Commentaire GitHub" value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Ajoutez un commentaire pour la pull request..." rows={3}/><button className="button primary" type="button" disabled={!comment.trim()} onClick={() => { setCommentSent(true); setCommentOpen(false) }}>Publier le commentaire</button></div>}{commentSent && <div className="publish-confirm"><Check size={15}/> Commentaire prêt à être envoyé sur GitHub.</div>}</Panel></div> }
+
+  return (
+    <div className="content">
+      <Header eyebrow="GITHUB / CODE REVIEW" title="Code Review" desc="Analysez les changements critiques avant de les intégrer à votre production." action="Voir sur GitHub" />
+      <div style={{marginTop: 40}}>
+        <div className="card">
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid rgba(255,255,255,0.1)', paddingBottom:20, marginBottom:20}}>
+            <div>
+              <Badge tone={status === 'approved' ? 'green' : status === 'rejected' ? 'red' : 'blue'}>
+                {status === 'approved' ? '✓ PR Approuvée et Mergée' : status === 'rejected' ? '✕ PR Rejetée' : 'En attente d\'approbation'}
+              </Badge>
+              <h2 style={{marginTop:15, marginBottom:5, fontSize:18}}>PR #482 <span style={{fontWeight:'normal', color:'#91a0b5'}}>feat: rotate authentication middleware</span></h2>
+              <div style={{fontSize:12, color:'#91a0b5'}}>Analyse terminée • Il y a 2 minutes</div>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <div style={{fontSize:24, fontWeight:'bold', color:'#10b981'}}>99%</div>
+              <div style={{fontSize:12, color:'#91a0b5'}}>confiance</div>
+            </div>
+          </div>
+          
+          <div style={{background:'rgba(255,255,255,0.03)', padding:15, borderRadius:8, marginBottom:20}}>
+            <b style={{fontSize:14, color:'#fff', display: 'flex', alignItems: 'center', gap: 8}}>✨ Analyse AgentOps Copilot</b>
+            <p style={{fontSize:13, color:'#91a0b5', marginTop:5, marginBottom:0}}>Le changement renforce la vérification JWT et supprime un accès direct à la base de données. Le code est sûr et performant.</p>
+          </div>
+
+          <div style={{display:'flex', gap:20, marginBottom:30}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12, color:'#91a0b5', marginBottom:10}}>Avant (src/auth/middleware.ts)</div>
+              <pre style={{background:'#000', padding:15, borderRadius:8, fontSize:12, overflowX:'auto', margin:0}}>
+                <code style={{color:'#ef4444'}}>
+                  18 export async function authorize(req) {'{
+'}
+                  19   const token = req.headers.get('authorization'){'
+'}
+                  20   return db.users.find(token){'
+'}
+                  21 {'}'}
+                </code>
+              </pre>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12, color:'#10b981', marginBottom:10}}>Après (Optimisé)</div>
+              <pre style={{background:'#000', padding:15, borderRadius:8, fontSize:12, overflowX:'auto', margin:0}}>
+                <code style={{color:'#10b981'}}>
+                  18 export async function authorize(req) {'{
+'}
+                  19   const token = req.headers.get('authorization'){'
+'}
+                  20   return await verifyJwt(token, {'{
+'}
+                  21     issuer: 'agentops', audience: 'api'{'
+'}
+                  22   {'}'}){'
+'}
+                  23 {'}'}
+                </code>
+              </pre>
+            </div>
+          </div>
+
+          {status === 'pending' && (
+            <div style={{display:'flex', gap:15, justifyContent:'flex-end'}}>
+              <button className="button ghost" onClick={handleReject}>Rejeter</button>
+              <button className="button ghost" onClick={handleComment}>{commenting ? "Génération par l'IA..." : "Générer un commentaire GitHub"}</button>
+              <button className="button primary" onClick={handleApprove}>Approuver la PR</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Heal() {
   const [crashes, setCrashes] = useState<string[][]>([]);
