@@ -73,9 +73,7 @@ function CodeReview() {
     setCommenting(true);
     setTimeout(() => {
       setCommenting(false);
-      alert(`AgentOps a analysé le code et généré le commentaire GitHub suivant :
-
-Excellente initiative de passer au JWT ! Cela sécurise l'API et évite l'accès direct en base. Le code respecte nos standards. PR prête à être mergée.`);
+      alert(`AgentOps a analysé le code et généré le commentaire GitHub suivant :\n\nExcellente initiative de passer au JWT ! Cela sécurise l'API et évite l'accès direct en base. Le code respecte nos standards. PR prête à être mergée.`);
     }, 1500);
   };
 
@@ -86,7 +84,7 @@ Excellente initiative de passer au JWT ! Cela sécurise l'API et évite l'accès
         <div className="card">
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid rgba(255,255,255,0.1)', paddingBottom:20, marginBottom:20}}>
             <div>
-              <Badge tone={status === 'approved' ? 'green' : status === 'rejected' ? 'red' : 'blue'}>
+              <Badge tone={status === 'approved' ? 'green' : status === 'rejected' ? 'amber' : 'blue'}>
                 {status === 'approved' ? '✓ PR Approuvée et Mergée' : status === 'rejected' ? '✕ PR Rejetée' : "En attente d'approbation"}
               </Badge>
               <h2 style={{marginTop:15, marginBottom:5, fontSize:18}}>PR #482 <span style={{fontWeight:'normal', color:'#91a0b5'}}>feat: rotate authentication middleware</span></h2>
@@ -143,6 +141,162 @@ Excellente initiative de passer au JWT ! Cela sécurise l'API et évite l'accès
   );
 }
 
+function Heal() {
+  const [crashes, setCrashes] = useState<string[][]>([]);
+  const [stats, setStats] = useState<{ hoursSaved: number, resolved: number, mttr: number, chart: number[], repos: string[] }>({ hoursSaved: 0, resolved: 0, mttr: 0, chart: [], repos: [] });
+  useEffect(() => {
+    fetch(`${API_URL}/devops/crashes/`).then(r=>r.json()).then(data => {
+      if(data && data.length) setCrashes(data.map((d:any) => [d.error, d.repo, d.time, d.status, d.tone]))
+    }).catch(()=>{});
+    fetch(`${API_URL}/devops/stats`).then(r=>r.json()).then(data => {
+      if(data) setStats({ hoursSaved: data.hours_saved || 0, resolved: data.incidents || 0, mttr: data.mttr || 0, chart: [15,22,18,30,42,28,45,60,55,65,72,85], repos: ['auth-service', 'payment-gateway', 'agentops-web'] })
+    }).catch(()=>{});
+  }, []);
+return <div className="content"><Header eyebrow="DEVOPS / AUTO-HEAL" title="GitHub Auto-Heal Hub" desc="L’IA surveille vos pipelines et remédie aux incidents critiques." action="Connecter GitHub" onAction={() => alert("Redirection vers l'intégration GitHub...")} /><div className="heal-stats"><div className="metric"><span>Heures sauvées ce mois</span><b>{stats.hoursSaved}<span>h</span></b><em>Données réelles</em></div><div className="metric"><span>Incidents résolus</span><b>{stats.resolved}</b><em>Données réelles</em></div><div className="metric"><span>MTTR moyen</span><b>{stats.mttr}<span>min</span></b><em>Données réelles</em></div></div><div className="heal-grid"><Panel className="chart-panel"><div className="panel-head"><div><h2>Heures de débogage sauvées</h2><p>Impact de l’auto-remédiation sur les 30 derniers jours</p></div><button className="select" type="button" onClick={(e) => { e.currentTarget.textContent = "Ce mois-ci"; }}>30 derniers jours <ChevronDown size={13} /></button></div><div className="bar-chart">{stats.chart.length === 0 ? <div style={{width:"100%",textAlign:"center",color:"#91a0b5",paddingTop:40}}>En attente de données métriques...</div> : stats.chart.map((h:number,i:number)=><div className="bar-col" key={i}><div className="bar" style={{height:`${h}%`}} /><small>{i}</small></div>)}</div></Panel><Panel className="repo-panel"><div className="panel-head"><div><h2>Repos surveillés</h2><p>Auto-heal actif</p></div><MoreHorizontal size={16} /></div>{stats.repos.length === 0 ? <div style={{padding:20,color:'#91a0b5',textAlign:'center'}}>Aucun dépôt surveillé.</div> : stats.repos.map((r:string,i:number)=><div className="repo-row" key={r}><GitBranch size={16} /><div><b>{r}</b><small>main branch</small></div><Badge tone="green">Protégé</Badge></div>)}</Panel></div><Panel className="crash-panel"><div className="panel-head"><div><h2>Crashs récents</h2><p>Derniers événements détectés sur CI/CD et production</p></div><button className="button ghost" type="button" onClick={() => window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"})}>Voir tous les incidents <ArrowRight size={14} /></button></div><div className="crash-head"><span>Erreur</span><span>Repository</span><span>Date</span><span>Statut IA</span></div>{crashes.map(x=><div className="crash-row" key={x[0]}><b>{x[0]}</b><span><GitBranch size={13} /> {x[1]}</span><span className="muted">{x[2]}</span><Badge tone={x[4] as 'green'|'amber'|'blue'}>{x[3]}</Badge></div>)}</Panel></div> }
+
+function Header({eyebrow,title,desc,action,onAction}:{eyebrow:string;title:string;desc:string;action:string;onAction?:()=>void}) { return <div className="hero-row"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div><button className="button primary" type="button" onClick={onAction}><GitBranch size={14} /> {action}</button></div> }
+function Brain() {
+  const [skills, setSkills] = useState<any[]>([]);
+  const [skillPromptOpen, setSkillPromptOpen] = useState(false);
+  const [newSkillTitle, setNewSkillTitle] = useState('');
+  const [newSkillDesc, setNewSkillDesc] = useState('');
+  
+  useEffect(() => {
+    fetch(`${API_URL}/memory/skills`).then(r=>r.json()).then(data => {
+      if(data && data.length) setSkills(data);
+    }).catch(()=>{});
+  }, []);
+
+  const handleShareSkill = () => {
+    if(!newSkillTitle || !newSkillDesc) return;
+    fetch(`${API_URL}/memory/skills`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({title: newSkillTitle, description: newSkillDesc})
+    }).then(r=>r.json()).then(data => {
+      setSkills([data, ...skills]);
+      setSkillPromptOpen(false);
+      setNewSkillTitle('');
+      setNewSkillDesc('');
+    });
+  };
+
+  const [chunks, setChunks] = useState<{id:string,content:string,status:string}[]>([]);
+  const [query, setBrainQuery] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [ingesting, setIngesting] = useState(false);
+  const [ingestMsg, setIngestMsg] = useState('');
+
+  const launchIngestion = async () => {
+    if(!githubUrl) return;
+    setIngesting(true);
+    setIngestMsg('');
+    try {
+      const res = await fetch(`${API_URL}/memory/ingest-github`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ url: githubUrl })
+      });
+      const data = await res.json();
+      setIngestMsg(data.message || 'Ingestion démarrée.');
+      setGithubUrl('');
+    } catch(e) {
+      setIngestMsg('Erreur de connexion au serveur.');
+    }
+    setIngesting(false);
+  };
+ return <div className="content brain"><Header eyebrow="DEVELOPER EXPERIENCE / KNOWLEDGE" title="Explorateur de Cerveau" desc="Interrogez la mémoire validée de votre codebase." action="Partager un Skill (Règle)" onAction={() => setSkillPromptOpen(true)} /><div className="brain-search"><Sparkles size={20} /><input placeholder="Posez une question sur l’architecture du projet..." /><kbd>⌘ K</kbd></div>
+    {window.localStorage.getItem('canIngest') === 'true' && <div style={{marginTop:20, padding:20, background:'#101f33', border:'1px solid #263a55', borderRadius:8}}>
+      <h3 style={{fontSize:14, marginBottom:10, color:'white', display:'flex', alignItems:'center', gap:8}}><GitBranch size={16}/> Nourrir le Cerveau (GitHub)</h3>
+      <p style={{fontSize:13, color:'#91a0b5', marginBottom:14}}>Collez l'URL d'un dépôt Git pour analyser son code source et renforcer l'IA.</p>
+      <div style={{display:'flex', gap:10}}>
+        <input style={{flex:1, padding:'10px 14px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:6, color:'white'}} placeholder="https://github.com/votre-equipe/projet" value={githubUrl} onChange={e=>setGithubUrl(e.target.value)} />
+        <button className="button primary" onClick={launchIngestion} disabled={ingesting || !githubUrl}>{ingesting ? 'Analyse...' : 'Ingérer le code'}</button>
+      </div>
+      {ingestMsg && <div style={{marginTop:10, color:'#4ade80', fontSize:13}}>{ingestMsg}</div>}
+    </div>}<div className="brain-layout"><div><div className="result-label">SKILLS IA (RÈGLES TRUSTED) <span>{skills.length} compétences</span></div>
+      {skills.map((s, i) => (
+        <Panel className="doc-card" key={s.id}>
+          <div className="doc-top"><Badge tone="green">TRUSTED SKILL</Badge><span className="muted">#{s.id}</span></div>
+          <h2>{s.title}</h2>
+          <p>{s.description}</p>
+          <div className="doc-foot"><span>{s.category}</span><span><Users size={13} /> Validé par {s.author}</span></div>
+        </Panel>
+      ))}</div>
+      {skillPromptOpen && (
+        <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999}}>
+          <div style={{background:'#0c1627', padding:30, borderRadius:12, width:400, border:'1px solid #1e2d40'}}>
+            <h2 style={{fontSize:18, marginBottom:10}}>Créer un nouveau Skill</h2>
+            <p style={{fontSize:13, color:'#888', marginBottom:20}}>Définissez une règle que l'IA devra toujours respecter.</p>
+            <input value={newSkillTitle} onChange={e=>setNewSkillTitle(e.target.value)} placeholder="Titre de la règle (ex: Accessibilité)" style={{width:'100%', padding:10, marginBottom:10, background:'rgba(255,255,255,0.05)', color:'white', border:'1px solid rgba(255,255,255,0.1)', borderRadius:6}} />
+            <textarea value={newSkillDesc} onChange={e=>setNewSkillDesc(e.target.value)} placeholder="Description détaillée de la directive..." rows={4} style={{width:'100%', padding:10, marginBottom:20, background:'rgba(255,255,255,0.05)', color:'white', border:'1px solid rgba(255,255,255,0.1)', borderRadius:6}} />
+            <div style={{display:'flex', gap:10, justifyContent:'flex-end'}}>
+              <button className="button ghost" onClick={()=>setSkillPromptOpen(false)}>Annuler</button>
+              <button className="button primary" onClick={handleShareSkill}>Enseigner à l'IA</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+<Panel className="brain-side"><h2>Sources de vérité</h2><p>Le cerveau AgentOps se nourrit uniquement de contenu validé.</p><div className="source"><Code2 size={15} /><div><b>342</b><small>fichiers indexés</small></div></div><div className="source"><ShieldCheck size={15} /><div><b>98%</b><small>couverture TRUSTED</small></div></div><button className="button ghost full" type="button" onClick={() => { const ev = new CustomEvent("navigate",{detail:"integrations"}); window.dispatchEvent(ev); }}>Gérer les sources <ArrowRight size={14} /></button></Panel></div></div> }
+
+function Leaderboard({ isAdmin }: { isAdmin: boolean }) {
+  const [leaders, setLeaders] = useState<string[][]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/auth/seed-demo`).catch(()=>{}); // fallback si vide
+    fetch(`${API_URL}/auth/users`).then(r=>r.json()).then(data => { if(data && data.length) setAllUsers(data); }).catch(()=>{});
+  }, []);
+  
+  const toggleIngest = async (clerkId: string) => {
+    const res = await fetch(`${API_URL}/auth/users/${clerkId}/toggle-ingest`, {method: 'POST'});
+    if(res.ok) {
+      const updated = await res.json();
+      setAllUsers(allUsers.map(u => u.id === clerkId ? {...u, can_ingest: updated.can_ingest} : u));
+    }
+  };
+
+  const [period, setPeriod] = useState('Ce mois');
+  useEffect(() => {
+    fetch(`${API_URL}/team/leaderboard/`).then(r=>r.json()).then(data => {
+      if(data && data.length) setLeaders(data.map((d: any) => [d.name, d.initials, d.score.toString(), d.growth, d.badge]))
+    }).catch(e => console.log("Backend offline, using mocks"));
+  }, []);
+  
+return <div className="content"><Header eyebrow="TEAM / PRODUCTIVITY" title="Leaderboard & Productivité" desc="Célébrez les bonnes pratiques qui rendent votre code plus sûr." action="Exporter le rapport" onAction={() => alert("Génération du rapport PDF...")} /><div className="leader-grid"><Panel className="podium"><div className="panel-head"><div><h2>Code validé ce mois</h2><p>Classement de l’équipe Platform</p></div><select><option>Septembre 2026</option></select></div><div className="podium-visual">
+{leaders.length < 3 ? <div style={{width:'100%',textAlign:'center',padding:40,color:'#91a0b5'}}>Générez des contributions pour afficher le podium.</div> : <>
+  <div className="place second"><span className="avatar">{leaders[1][1]}</span><b>{leaders[1][0]}</b><strong>{leaders[1][2]}</strong><small>validations</small></div>
+  <div className="place first"><span className="crown">1</span><span className="avatar big">{leaders[0][1]}</span><b>{leaders[0][0]}</b><strong>{leaders[0][2]}</strong><small>validations</small></div>
+  <div className="place third"><span className="avatar">{leaders[2][1]}</span><b>{leaders[2][0]}</b><strong>{leaders[2][2]}</strong><small>validations</small></div>
+</>}
+</div></Panel><Panel className="streak"><div className="streak-number"><Sparkles size={18} /><b>27</b><span>jours</span></div><h2>Votre streak</h2><p>Vous êtes dans le top 8% des contributeurs cette semaine.</p><div className="heatmap">{Array.from({length:84},(_,i)=><i key={i} className={`heat h${(i*7)%5}`} />)}</div><div className="heat-label"><span>Moins</span><i className="heat h0"/><i className="heat h2"/><i className="heat h4"/><span>Plus</span></div></Panel></div><Panel className="team-table"><div className="panel-head"><div><h2>Contributions de l’équipe</h2><p>Bonnes pratiques et qualité de code</p></div><button className="button ghost" type="button" onClick={() => setPeriod(period==='Ce mois'?'Cette semaine':period==='Cette semaine'?'Tout':'Ce mois')}>{ period } <ChevronDown size={13} /></button></div>{leaders.length === 0 ? <div style={{padding:40,textAlign:"center",color:"#91a0b5"}}>La base de données Neon est vide. Aucune donnée à afficher.</div> : leaders.map((r,i)=><div className="member-row" key={r[0]}><span className="avatar small">{r[1]}</span><b>{r[0]}</b><span className="muted">{r[4]}</span><strong>{r[2]}</strong><em>{r[3]}</em><div className="progress"><span style={{width:`${100-i*18}%`}} /></div></div>)}</Panel></div> }
+
+function Integrations({ userId }: { userId: string }) {
+  const [slack,setSlack]=useState(false);
+  const [teams,setTeams]=useState(false);
+  const [token,setToken]=useState('sk_dev_••••••••••••••••••••••');
+  const [tokenCopied,setTokenCopied]=useState(false);
+  const [generating, setGenerating] = useState(false);
+  const generateToken = async () => {
+    setGenerating(true);
+    try {
+      const r = await fetch(`${API_URL}/auth/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clerk_id: userId })
+      });
+      const data = await r.json();
+      if (data.token) {
+        setToken(data.token);
+        navigator.clipboard?.writeText(data.token);
+        setTokenCopied(true);
+        setTimeout(()=>setTokenCopied(false), 2000);
+      }
+    } catch(e) { console.error('Erreur Token'); }
+    setGenerating(false);
+  };
+  return <div className="content"><Header eyebrow="SETUP / DEVELOPER TOOLS" title="Intégrations & Extensions IDE" desc="Connectez AgentOps à votre environnement de développement." action="Ajouter une intégration" onAction={() => alert("Ouverture du catalogue d'intégrations...")} /><div className="integration-grid"><Panel className="token-panel"><div className="panel-head"><div><h2><Terminal size={17} /> Token CLI</h2><p>Utilisez ce token pour authentifier l’AgentOps CLI.</p></div><Badge tone="green">Sécurisé</Badge></div><div className="token-box"><code style={{wordBreak:"break-all",fontSize:11}}>{token}</code><button aria-label="Copier le token" onClick={()=>{navigator.clipboard?.writeText(token);setTokenCopied(true);setTimeout(()=>setTokenCopied(false),1500)}}><Copy size={14} /></button></div><button className="button primary full" type="button" onClick={generateToken}><Terminal size={14} /> {generating ? "Génération en cours..." : tokenCopied ? "✓ Token généré et copié !" : "Générer mon Token CLI"}</button><p className="security-note"><Lock size={13} /> Ne partagez jamais votre token. Il sera affiché une seule fois.</p></Panel><Panel className="vscode-card"><div className="vscode-copy"><Badge tone="purple">AGENTOPS FOR VS CODE</Badge><h2>Le linter qui comprend votre code.</h2><p>Recevez des suggestions de sécurité et de style en temps réel, directement dans votre éditeur.</p><button className="button ghost" type="button" disabled style={{opacity: 0.6, cursor: "not-allowed"}}>Bientôt disponible <Download size={14} /></button></div><div className="editor"><div className="editor-top"><span>auth.ts</span><span>●</span></div><pre><code><span className="kw">async function</span> authorize(token) {'{'}{`\n`}  <span className="kw">const</span> user = <span className="fn">verifyToken</span>(token){`\n`}  <span className="err">  return user.permissions</span>{`\n`} {'}'}</code></pre><span className="lint-tip">AgentOps: add permission check</span></div></Panel></div><Panel className="channel-panel"><div className="panel-head"><div><h2>Notifications & Collaboration</h2><p>Restez informé des validations et incidents critiques.</p></div></div><div className="channel-row"><span className="channel-icon slack">#</span><div><b>Slack</b><small>Recevoir les alertes dans votre workspace</small></div><button className={`toggle ${slack?'on':''}`} onClick={()=>setSlack(!slack)} aria-pressed={slack}><span /></button></div><div className="channel-row"><span className="channel-icon teams">T</span><div><b>Microsoft Teams</b><small>Connecter les notifications à un canal Teams</small></div><button className={`toggle ${teams?"on":""}`} onClick={()=>setTeams(!teams)} aria-pressed={teams}><span /></button></div></Panel></div> }
 
 function ComponentHub({ isDeveloper, developerTrusted, onGrantDeveloperTrust }: { isDeveloper: boolean; developerTrusted: boolean; onGrantDeveloperTrust: () => void }) {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
