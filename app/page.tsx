@@ -209,40 +209,42 @@ function Brain() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResult, setSearchResult] = useState<string | null>(null);
 
-  const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim() !== '') {
-      setIsSearching(true);
-      setSearchResult(null);
-      try {
-        const res = await fetch(`${API_URL}/memory/prepare`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ project_id: 'mp-afritrips', prompt: searchQuery })
-        });
-        const data = await res.json();
-        setSearchResult(data.context || "Aucune réponse trouvée.");
-      } catch (err) {
-        setSearchResult("Erreur lors de la recherche vectorielle.");
-      }
-      setIsSearching(false);
+  const executeSearch = async (e?: any) => {
+    if (e) e.preventDefault();
+    if (searchQuery.trim() === '') return;
+    setIsSearching(true);
+    setSearchResult(null);
+    try {
+      const res = await fetch(`${API_URL}/memory/prepare`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: 'mp-afritrips', prompt: searchQuery })
+      });
+      const data = await res.json();
+      setSearchResult(data.context || "Aucune réponse trouvée.");
+    } catch (err) {
+      setSearchResult("Erreur lors de la recherche vectorielle.");
     }
+    setIsSearching(false);
   };
 
   return (
     <div className="content brain">
       <Header eyebrow="DEVELOPER EXPERIENCE / KNOWLEDGE" title="Explorateur de Cerveau" desc="Interrogez la mémoire validée de votre codebase." action="Partager un Skill (Règle)" onAction={() => setSkillPromptOpen(true)} />
       
-      <div className="brain-search">
+      <form className="brain-search" onSubmit={executeSearch} style={{display:'flex', alignItems:'center'}}>
         <Sparkles size={20} />
         <input 
-          placeholder="Posez une question sur l’architecture du projet... (Appuyez sur Entrée)" 
+          placeholder="Posez une question sur l'architecture..." 
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          onKeyDown={handleSearch}
           disabled={isSearching}
+          style={{flex:1, background:'transparent', border:'none', color:'white', outline:'none'}}
         />
-        <kbd>⌘ K</kbd>
-      </div>
+        <button type="submit" className="button primary" disabled={isSearching} style={{padding:'6px 16px', marginLeft: 10, borderRadius: 6, fontSize: 13, height: '100%'}}>
+          {isSearching ? 'Recherche...' : 'Rechercher'}
+        </button>
+      </form>
 
       {isSearching && (
         <div style={{marginTop: 15, padding: 15, color: '#91a0b5', fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.02)', borderRadius: 8}}>
