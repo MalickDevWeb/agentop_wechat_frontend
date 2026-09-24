@@ -73,9 +73,9 @@ function CodeReview() {
     setCommenting(true);
     setTimeout(() => {
       setCommenting(false);
-      alert("AgentOps a analysé le code et généré le commentaire GitHub suivant :
+      alert(`AgentOps a analysé le code et généré le commentaire GitHub suivant :
 
-'Excellente initiative de passer au JWT ! Cela sécurise l\'API et évite l\'accès direct en base. Le code respecte nos standards. PR prête à être mergée.'");
+Excellente initiative de passer au JWT ! Cela sécurise l'API et évite l'accès direct en base. Le code respecte nos standards. PR prête à être mergée.`);
     }, 1500);
   };
 
