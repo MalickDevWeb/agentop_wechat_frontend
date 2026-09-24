@@ -28,7 +28,7 @@ function Twin() {
     fetch(`${API_URL}/twin/`)
       .then(r=>r.json())
       .then(data => {
-        if(data && data.length) setReviews(data.map(d => ({id: '#'+d.id, title: d.title, status: d.status, confidence: d.confidence, time: d.time, color: d.confidence > 90 ? 'green' : 'red'})))
+        if(data && data.length) setReviews(data.map((d: any) => ({id: '#'+d.id, title: d.title, status: d.status, confidence: d.confidence, time: d.time, color: d.confidence > 90 ? 'green' : 'red'})))
       }).catch(e => console.log(e))
   }, [])
  const [auto, setAuto] = useState(true); 
@@ -79,7 +79,7 @@ function CodeReview() { const [status, setStatus] = useState<'pending' | 'approv
 
 function Heal() {
   const [crashes, setCrashes] = useState<string[][]>([]);
-  const [stats, setStats] = useState({ hoursSaved: 0, resolved: 0, mttr: 0, chart: [], repos: [] });
+  const [stats, setStats] = useState<{ hoursSaved: number, resolved: number, mttr: number, chart: number[], repos: string[] }>({ hoursSaved: 0, resolved: 0, mttr: 0, chart: [], repos: [] });
   useEffect(() => {
     fetch(`${API_URL}/devops/crashes/`).then(r=>r.json()).then(data => {
       if(data && data.length) setCrashes(data.map((d:any) => [d.error, d.repo, d.time, d.status, d.tone]))
@@ -98,7 +98,7 @@ function Leaderboard() {
   const [period, setPeriod] = useState('Ce mois');
   useEffect(() => {
     fetch(`${API_URL}/team/leaderboard/`).then(r=>r.json()).then(data => {
-      if(data && data.length) setLeaders(data.map(d => [d.name, d.initials, d.score.toString(), d.growth, d.badge]))
+      if(data && data.length) setLeaders(data.map((d: any) => [d.name, d.initials, d.score.toString(), d.growth, d.badge]))
     }).catch(e => console.log("Backend offline, using mocks"));
   }, []);
   
