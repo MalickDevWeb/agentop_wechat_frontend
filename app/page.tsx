@@ -75,7 +75,7 @@ function CodeReview() {
   const handleComment = async () => {
     setCommenting(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/devops/review', {
+      const res = await fetch('https://wechat-agent-5y0i.onrender.com/api/v1/devops/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pr_id: "482", code_diff: "+ const token = req.headers.jwt;\n- const token = req.query.token;\n+ // FIXME: JWT_SECRET hardcoded for testing\n+ const secret = 'super-secret-key';" })
