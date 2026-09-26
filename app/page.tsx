@@ -68,15 +68,25 @@ function CodeReview() {
   const [status, setStatus] = useState('pending');
   const [commenting, setCommenting] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
+  const [reviewText, setReviewText] = useState('');
 
   const handleApprove = () => setStatus('approved');
   const handleReject = () => setStatus('rejected');
-  const handleComment = () => {
+  const handleComment = async () => {
     setCommenting(true);
-    setTimeout(() => {
-      setCommenting(false);
-      setShowCommentModal(true);
-    }, 1500);
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/devops/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pr_id: "482", code_diff: "+ const token = req.headers.jwt;\n- const token = req.query.token;\n+ // FIXME: JWT_SECRET hardcoded for testing\n+ const secret = 'super-secret-key';" })
+      });
+      const data = await res.json();
+      setReviewText(data.review || "Revue terminée.");
+    } catch (e) {
+      setReviewText("🤖 **AgentOps (Mode Hors-Ligne)**\n\nLa revue n'a pas pu être effectuée (erreur réseau).");
+    }
+    setCommenting(false);
+    setShowCommentModal(true);
   };
 
   return (
@@ -149,10 +159,9 @@ function CodeReview() {
               <span style={{color: '#8b949e', fontSize: 12}}>a laissé un commentaire</span>
             </div>
             <div style={{padding: '24px 20px'}}>
-              <p style={{color: '#c9d1d9', fontSize: 14, lineHeight: 1.6, margin: 0}}>
-                Excellente initiative de passer au JWT ! Cela sécurise l'API et évite l'accès direct en base.<br/><br/>
-                Le code respecte nos standards de sécurité. PR prête à être mergée. ✅
-              </p>
+              <div style={{color: '#c9d1d9', fontSize: 14, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '50vh', overflowY: 'auto'}}>
+                {reviewText}
+              </div>
             </div>
             <div style={{padding: '16px 20px', borderTop: '1px solid #30363d', display: 'flex', justifyContent: 'flex-end'}}>
               <button onClick={() => setShowCommentModal(false)} style={{background: '#238636', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 16px', borderRadius: 6, fontWeight: 500, cursor: 'pointer', fontSize: 14}}>
@@ -244,7 +253,8 @@ function Brain() {
       const res = await fetch(`${API_URL}/memory/prepare`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project_id: 'mp-afritrips', prompt: searchQuery })
+        body: JSON.stringify({ project_id: 'mp-afritrips', prompt: searchQuery }),
+        cache: 'no-store'
       });
       const data = await res.json();
       setSearchResult(data.context || "Aucune réponse trouvée.");
@@ -468,10 +478,7 @@ function Login({ onLogin }: { onLogin: () => void }) {
 
 function Gouvernance() {
   const [allUsers, setAllUsers] = useState<any[]>([
-    { id: 'usr_1', name: 'Papa Malick TEUW', email: 'malickteuw.devweb@gmail.com', role: 'ADMIN', perms: { submit: true, auto_learn: true, publish: true } },
-    { id: 'usr_2', name: 'Marie Fall', email: 'marie.fall@orange-sonatel.com', role: 'DEV', perms: { submit: true, auto_learn: false, publish: false } },
-    { id: 'usr_3', name: 'Amadou Diop', email: 'amadou.diop@orange-sonatel.com', role: 'DEV', perms: { submit: true, auto_learn: false, publish: true } },
-    { id: 'usr_4', name: 'Ousmane Sow', email: 'ousmane.sow@orange-sonatel.com', role: 'DEV', perms: { submit: false, auto_learn: false, publish: false } }
+    { id: 'usr_1', name: 'Papa Malick TEUW', email: 'malickteuw.devweb@gmail.com', role: 'ADMIN', perms: { submit: true, auto_learn: true, publish: true } }
   ]);
 
   const togglePerm = (clerkId: string, permKey: string) => {
